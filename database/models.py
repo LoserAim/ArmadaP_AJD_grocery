@@ -5,29 +5,23 @@ from sqlalchemy.orm import relationship
 
 from database.sql_client import Base
 
+def generate_uuid():
+    return str(uuid.uuid4())
 
 class Customer(Base):
     __tablename__ = 'customers'
-    id = Column(String, primary_key=True, default=str(uuid.uuid4))
-    username = Column(String, unique=True, required=True)
-    password = Column(String, nullable=False, required=True)
+    id = Column(String, primary_key=True, default=generate_uuid)
+    username = Column(String, unique=True)
+    password = Column(String, nullable=False)
     email = Column(String)
+    address = Column(String)
     created_at = Column(Float, default=round(time.time()))
     updated_at = Column(Float)
-    grocery_lists = relationship("Grocery_List")
-    addresses = relationship("Address")
+    grocery_lists = relationship("GroceryList", cascade='all, delete-orphan')
 
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-class Address(Base):
-    __tablename__ = 'addresses'
-    id = Column(String, primary_key=True, default=str(uuid.uuid4))
-    customer_id = Column(String, ForeignKey('customers.id'))
-    street_name = Column(String)
-    city = Column(String)
-    state = Column(String)
-    type = Column(String)
-    created_at = Column(Float, default=round(time.time()))
-    updated_at = Column(Float)
 
 
 grocery_list_item_table = Table('grocery_list_item', Base.metadata,
@@ -35,23 +29,29 @@ grocery_list_item_table = Table('grocery_list_item', Base.metadata,
                                 Column('grocery_item_id', ForeignKey('grocery_items.id')))
 
 
-class Grocery_List(Base):
+class GroceryList(Base):
     __tablename__ = 'grocery_lists'
-    id = Column(String, primary_key=True, default=str(uuid.uuid4))
+    id = Column(String, primary_key=True, default=generate_uuid)
     customer_id = Column(String, ForeignKey('customers.id'))
     desired_delivery = Column(Float)
     total_price = Column(Integer)
     created_at = Column(Float, default=round(time.time()))
     updated_at = Column(Float)
-    grocery_items = relationship("Grocery_Item", secondary=grocery_list_item_table)
+    grocery_items = relationship("GroceryItem", secondary=grocery_list_item_table)
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-class Grocery_Item(Base):
+class GroceryItem(Base):
     __tablename__ = 'grocery_items'
-    id = Column(String, primary_key=True, default=str(uuid.uuid4))
+    id = Column(String, primary_key=True, default=generate_uuid)
     price_per_unit = Column(Integer)
     quantity = Column(Integer)
-    name = Column(String, required=True, unique=True)
+    name = Column(String)
     type = Column(String)
     created_at = Column(Float, default=round(time.time()))
     updated_at = Column(Float)
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
