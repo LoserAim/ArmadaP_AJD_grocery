@@ -20,7 +20,8 @@ class Customer(Base):
     grocery_lists = relationship("GroceryList", cascade='all, delete-orphan')
 
     def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        return {**{c.name: getattr(self, c.name) for c in self.__table__.columns},
+                **{'grocery_lists': [g_list.as_dict() for g_list in self.grocery_lists]}}
 
 
 
@@ -40,7 +41,8 @@ class GroceryList(Base):
     grocery_items = relationship("GroceryItem", secondary=grocery_list_item_table)
 
     def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        return {**{c.name: getattr(self, c.name) for c in self.__table__.columns},
+                **{'grocery_items': [g_item.as_dict() for g_item in self.grocery_items]}}
 
 
 class GroceryItem(Base):

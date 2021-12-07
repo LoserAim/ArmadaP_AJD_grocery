@@ -9,7 +9,8 @@ from rest_api.utils import verify_and_pull_json
 
 
 class SingleGroceryListAPI(MethodView):
-    required_fields = ['customer_id']
+    required_fields = []
+    fields = GroceryList().as_dict().keys()
 
     def get(self, item_id=None):
         if not item_id:
@@ -24,14 +25,12 @@ class SingleGroceryListAPI(MethodView):
         status, payload = verify_and_pull_json(request)
         if status != 'success':
             return payload
-        contains_required_fields = any([payload.get(key) for key in self.required_fields])
-        if not contains_required_fields:
-            return make_response((jsonify(status="error", data=f"Payload was missing one or more required fields: "
-                                                               f"{', '.join(self.required_fields)}"), 404))
-        if 'grocery_items' in payload:
-            payload['grocery_items'] = [GroceryItem(**grocery_item) for grocery_item in
-                                        payload.get('grocery_items', []) or []]
+        docs = payload.pop('grocery_items')
         grocery_list = GroceryList(**payload)
+        if docs:
+            grocery_items = [GroceryItem(**grocery_item) for grocery_item in
+                                        docs or []]
+            grocery_list.grocery_items = grocery_items
         db_session.add(grocery_list)
         db_session.commit()
         return make_response(
@@ -46,11 +45,11 @@ class SingleGroceryListAPI(MethodView):
         status, payload = verify_and_pull_json(request)
         if status != 'success':
             return payload
-        contains_data_in_any_field = any([payload.get(key) for key in GroceryList().as_dict().keys()])
+        contains_data_in_any_field = any([payload.get(key) for key in self.fields])
         if not contains_data_in_any_field:
             return make_response((jsonify(status="error", data=f"Payload had no data to patch requested record "
                                                                f"'{item_id}' with"), 404))
-        for key in GroceryList().as_dict().keys():
+        for key in self.fields:
             if key == 'grocery_items' and payload.get(key):
                 item.grocery_items.extend([GroceryItem(**grocery_item) for grocery_item in
                                            payload.get('grocery_items', []) or []])
