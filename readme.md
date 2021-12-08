@@ -4,6 +4,7 @@ Shown below are a series of steps to take to run this application.
 1. Setup a virtual environment and activate virtual environment
 2. install the `requirements.txt` file using `pip`
 3. Set the flask app to target `app.py`. Examples shown below:
+
 Bash
 ```bash
 export FLASK_APP=app
