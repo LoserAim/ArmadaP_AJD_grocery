@@ -133,7 +133,7 @@ class TestGroceryListAPI:
         g_list = FakeData().example_grocery_list
         response = client.post(url_for('grocery_list'), json=g_list.as_dict())
         grocery_list = GroceryList.query.filter(GroceryList.desired_delivery == g_list.desired_delivery).first()
-        assert g_list is not None and g_list.desired_delivery == g_list.desired_delivery
+        assert g_list is not None and grocery_list.desired_delivery == g_list.desired_delivery
 
     def test_patch_asserting_no_payload_results_in_406(self, client):
         response = client.patch(url_for('grocery_list', item_id=example_data.example_grocery_list.id))
@@ -177,4 +177,60 @@ class TestGroceryListAPI:
 
     def test_delete_asserting_no_id_results_in_405(self, client):
         response = client.delete(url_for('grocery_list'))
+        assert response.status_code == 405
+
+class TestGroceryItemAPI:
+    def test_post_asserting_no_payload_results_in_406(self, client):
+        request = client.post(url_for('grocery_item'))
+        assert request.status_code == 406
+
+    def test_post_asserting_correct_payload_results_in_201(self, client):
+        response = client.post(url_for('grocery_item'), json=FakeData().example_grocery_item.as_dict())
+        assert response.status_code == 201
+
+    def test_post_asserting_correct_payload_with_grocery_item_results_in_201(self, client):
+        sample_data = FakeData()
+        response = client.post(url_for('grocery_item'), json=sample_data.example_grocery_item.as_dict())
+        assert response.status_code == 201
+
+    def test_post_asserting_correct_payload_results_in_item_existing_in_db(self, client):
+        g_item = FakeData().example_grocery_item
+        response = client.post(url_for('grocery_item'), json=g_item.as_dict())
+        grocery_item = GroceryItem.query.filter(GroceryItem.name == g_item.name).first()
+        assert g_item is not None and grocery_item.name == g_item.name
+
+    def test_patch_asserting_no_payload_results_in_406(self, client):
+        response = client.patch(url_for('grocery_item', item_id=example_data.example_grocery_item.id))
+        assert response.status_code == 406
+
+    def test_patch_asserting_no_id_results_in_405(self, client):
+        g_item = FakeData().example_grocery_item
+        response = client.patch(url_for('grocery_item'), json={"name": g_item.name})
+        assert response.status_code == 405
+
+    def test_patch_asserting_correct_payload_results_in_updated_desired_delivery(self, client):
+        g_item = FakeData().example_grocery_item.name
+        response = client.patch(url_for('grocery_item', item_id=example_data.example_grocery_item.id),
+                                json={"name": g_item})
+        grocery_item = GroceryItem.query.filter(GroceryItem.desired_delivery == g_item).first()
+        assert grocery_item is not None and grocery_item.desired_delivery == g_item
+
+    def test_patch_asserting_correct_payload_results_in_204(self, client):
+        gi = FakeData().example_grocery_item.name
+        response = client.patch(url_for('grocery_item', item_id=example_data.example_grocery_item.id),
+                                json={"name": gi})
+        assert response.status_code == 204
+
+    def test_patch_asserting_incorrect_payload_results_in_404(self, client):
+        gi = FakeData().example_grocery_item.name
+        response = client.patch(url_for('grocery_item', item_id=example_data.example_grocery_item.id),
+                                json={"name2": gi})
+        assert response.status_code == 404
+
+    def test_delete_asserting_incorrect_id_results_in_404(self, client):
+        response = client.delete(url_for('grocery_item', item_id=example_data.example_grocery_item.id + '22'))
+        assert response.status_code == 404
+
+    def test_delete_asserting_no_id_results_in_405(self, client):
+        response = client.delete(url_for('grocery_item'))
         assert response.status_code == 405

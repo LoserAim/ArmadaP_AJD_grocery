@@ -9,7 +9,7 @@ from rest_api.utils import verify_and_pull_json
 
 
 class SingleGroceryItemAPI(MethodView):
-    required_fields = ['username', 'password']
+    required_fields = ['name', 'quantity', 'price_per_unit']
 
     def get(self, item_id=None):
         if not item_id:
