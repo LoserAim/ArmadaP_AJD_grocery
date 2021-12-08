@@ -1,15 +1,15 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-
+from database.sql_client import init_db
 from database.sql_client import db_session
 
 db = SQLAlchemy()
 
 
-def create_app(app_config):
+def create_app(app_config='app_config.py'):
     app = Flask(__name__)
     app.config.from_pyfile(app_config)
-
+    init_db()
     db.init_app(app)
 
     @app.teardown_appcontext
