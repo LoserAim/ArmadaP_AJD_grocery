@@ -210,12 +210,12 @@ class TestGroceryItemAPI:
         response = client.patch(url_for('grocery_item'), json={"name": g_item.name})
         assert response.status_code == 405
 
-    def test_patch_asserting_correct_payload_results_in_updated_desired_delivery(self, client):
+    def test_patch_asserting_correct_payload_results_in_updated_name(self, client):
         g_item = FakeData().example_grocery_item.name
         response = client.patch(url_for('grocery_item', item_id=example_data.example_grocery_item.id),
                                 json={"name": g_item})
-        grocery_item = GroceryItem.query.filter(GroceryItem.desired_delivery == g_item).first()
-        assert grocery_item is not None and grocery_item.desired_delivery == g_item
+        grocery_item = GroceryItem.query.filter(GroceryItem.name == g_item).first()
+        assert grocery_item is not None and grocery_item.name == g_item
 
     def test_patch_asserting_correct_payload_results_in_204(self, client):
         gi = FakeData().example_grocery_item.name
