@@ -9,6 +9,7 @@ from tests.example_data import FakeData
 
 example_data = FakeData()
 
+
 @pytest.fixture(scope="module", autouse=True)
 def client():
     init_db()
@@ -51,7 +52,7 @@ class TestCustomerAPI:
         response = client.post(url_for('customer'), json=sample_data.example_customer.as_dict())
         customer = Customer.query.filter(Customer.username == sample_data.example_customer.username).first()
         assert customer is not None and len(customer.grocery_lists) > 0
-    
+
     def test_post_asserting_correct_payload_results_in_item_existing_in_db(self, client):
         c = FakeData().example_customer
         response = client.post(url_for('customer'), json=c.as_dict())
@@ -168,7 +169,7 @@ class TestGroceryListAPI:
     def test_patch_asserting_incorrect_payload_results_in_404(self, client):
         gl = FakeData().example_grocery_list.desired_delivery
         response = client.patch(url_for('grocery_list', item_id=example_data.example_grocery_list.id),
-                                json={"username2": gl })
+                                json={"username2": gl})
         assert response.status_code == 404
 
     def test_delete_asserting_incorrect_id_results_in_404(self, client):
@@ -178,6 +179,7 @@ class TestGroceryListAPI:
     def test_delete_asserting_no_id_results_in_405(self, client):
         response = client.delete(url_for('grocery_list'))
         assert response.status_code == 405
+
 
 class TestGroceryItemAPI:
     def test_post_asserting_no_payload_results_in_406(self, client):
